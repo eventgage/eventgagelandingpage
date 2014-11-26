@@ -1,73 +1,199 @@
-<html>
-    <head>
-        <title>Yelp OAuth Example</title>
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-        <script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/oauth.js"></script>
-        <script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/sha1.js"></script>
-        <script type="text/javascript">
-            var auth = {
-                //
-                // Update with your auth tokens.
-                //
-                consumerKey : "GuuyHudxS_9kFPWzPsNR5Q",
-                consumerSecret : "eMbNX3NQ3dDd0fk5jzKv_aTIKc4",
-                accessToken : "MnsKPcsmS8tPYgHU6V5wdEGigwl7GOAl",
-                // This example is a proof of concept, for how to use the Yelp v2 API with javascript.
-                // You wouldn't actually want to expose your access token secret like this in a real application.
-                accessTokenSecret : "N0ps5QcqmL4asyHYTYwR5VTZ4xs",
-                serviceProvider : {
-                    signatureMethod : "HMAC-SHA1"
-                }
-            };
+<!DOCTYPE html>
+<html lang="en">
 
-            var terms = 'club';
-            var near = 'Chicago';
+<head>
+    <title>Mappa</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    <script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/oauth.js"></script>
+    <script type="text/javascript" src="http://oauth.googlecode.com/svn/code/javascript/sha1.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="static/script/map.js"></script>
 
-            var accessor = {
-                consumerSecret : auth.consumerSecret,
-                tokenSecret : auth.accessTokenSecret
-            };
-            parameters = [];
-            parameters.push(['term', terms]);
-            parameters.push(['location', near]);
-            parameters.push(['callback', 'cb']);
-            parameters.push(['oauth_consumer_key', auth.consumerKey]);
-            parameters.push(['oauth_consumer_secret', auth.consumerSecret]);
-            parameters.push(['oauth_token', auth.accessToken]);
-            parameters.push(['oauth_signature_method', 'HMAC-SHA1']);
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/map.css"></link>
+    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script>
+        function initialize() {
+            var mapCanvas = document.getElementById('map-canvas');
+            var mapOptions = {
+                center: new google.maps.LatLng(44.5403, -78.5463),
+                zoom: 8,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                scrollwheel: false,
+                streetViewControl: false
+            }
+            var map = new google.maps.Map(mapCanvas, mapOptions)
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+</head>
 
-            var message = {
-                'action' : 'http://api.yelp.com/v2/search',
-                'method' : 'GET',
-                'parameters' : parameters
-            };
+<body>
 
-            OAuth.setTimestampAndNonce(message);
-            OAuth.SignatureMethod.sign(message, accessor);
+    <div id="main">
+        <div id="header">
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">EventGage</a>
+                    </div>
 
-            var parameterMap = OAuth.getParameterMap(message.parameters);
-            console.log(parameterMap);
-
-            $.ajax({
-                'url' : message.action,
-                'data' : parameterMap,
-                'dataType' : 'jsonp',
-                'jsonpCallback' : 'cb',
-                'success' : function(data, textStats, XMLHttpRequest) {
-                    console.log(data.businesses);
-                    for(var el in data.businesses) {
-                        var obj = data.businesses[el];
-                        for(var x in obj) 
-                            $('#test').append(x+" : "+obj[x]+'</br>');
-                        $('#test').append('</br>');
-                    }
-                }
-            });
-
-        </script>
-    </head>
-    <body>
-        <div id="test">
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <form class="navbar-form navbar-left" role="search">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search">
+                            </div>
+                            <button type="submit" class="btn btn-default">Submit</button>
+                        </form>
+                    </div>
+                    <!-- /.navbar-collapse -->
+                </div>
+                <!-- /.container-fluid -->
+            </nav>
         </div>
-    </body>
+        <div id="map-canvas"></div>
+
+        <div id="product-grid">
+            <div class="container-fluid">
+                <div class="well well-sm" >
+                    <strong>Filters</strong>
+                </div>
+                <div id="products" class="row list-group">
+                    <div class="item  col-xs-4 col-lg-4">
+                        <div class="thumbnail">
+                            <img class="group list-group-image" src="http://placehold.it/400x250/000/fff" alt="" />
+                            <div class="caption">
+                                <h4 class="group inner list-group-item-heading">
+                                        Product title</h4>
+                                <p class="group inner list-group-item-text">
+                                    Product description... Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <p class="lead">
+                                            $21.000</p>
+                                    </div>
+                                    <div class="col-xs-12 col-md-6">
+                                        <a class="btn btn-success" href="http://www.jquery2dotnet.com">Add to cart</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item  col-xs-4 col-lg-4">
+                        <div class="thumbnail">
+                            <img class="group list-group-image" src="http://placehold.it/400x250/000/fff" alt="" />
+                            <div class="caption">
+                                <h4 class="group inner list-group-item-heading">
+                                        Product title</h4>
+                                <p class="group inner list-group-item-text">
+                                    Product description... Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <p class="lead">
+                                            $21.000</p>
+                                    </div>
+                                    <div class="col-xs-12 col-md-6">
+                                        <a class="btn btn-success" href="http://www.jquery2dotnet.com">Add to cart</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item  col-xs-4 col-lg-4">
+                        <div class="thumbnail">
+                            <img class="group list-group-image" src="http://placehold.it/400x250/000/fff" alt="" />
+                            <div class="caption">
+                                <h4 class="group inner list-group-item-heading">
+                                        Product title</h4>
+                                <p class="group inner list-group-item-text">
+                                    Product description... Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <p class="lead">
+                                            $21.000</p>
+                                    </div>
+                                    <div class="col-xs-12 col-md-6">
+                                        <a class="btn btn-success" href="http://www.jquery2dotnet.com">Add to cart</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item  col-xs-4 col-lg-4">
+                        <div class="thumbnail">
+                            <img class="group list-group-image" src="http://placehold.it/400x250/000/fff" alt="" />
+                            <div class="caption">
+                                <h4 class="group inner list-group-item-heading">
+                                        Product title</h4>
+                                <p class="group inner list-group-item-text">
+                                    Product description... Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <p class="lead">
+                                            $21.000</p>
+                                    </div>
+                                    <div class="col-xs-12 col-md-6">
+                                        <a class="btn btn-success" href="http://www.jquery2dotnet.com">Add to cart</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item  col-xs-4 col-lg-4">
+                        <div class="thumbnail">
+                            <img class="group list-group-image" src="http://placehold.it/400x250/000/fff" alt="" />
+                            <div class="caption">
+                                <h4 class="group inner list-group-item-heading">
+                                        Product title</h4>
+                                <p class="group inner list-group-item-text">
+                                    Product description... Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <p class="lead">
+                                            $21.000</p>
+                                    </div>
+                                    <div class="col-xs-12 col-md-6">
+                                        <a class="btn btn-success" href="http://www.jquery2dotnet.com">Add to cart</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item  col-xs-4 col-lg-4">
+                        <div class="thumbnail">
+                            <img class="group list-group-image" src="http://placehold.it/400x250/000/fff" alt="" />
+                            <div class="caption">
+                                <h4 class="group inner list-group-item-heading">
+                                        Product title</h4>
+                                <p class="group inner list-group-item-text">
+                                    Product description... Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.</p>
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <p class="lead">
+                                            $21.000</p>
+                                    </div>
+                                    <div class="col-xs-12 col-md-6">
+                                        <a class="btn btn-success" href="http://www.jquery2dotnet.com">Add to cart</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
 </html>
+
+<!--     -->
